@@ -1,22 +1,48 @@
 <template>
   <div id="app">
-    <input v-model="name" type="text" placeholder="room name">
-    <button @click="create">
-      Create
-    </button>
-    <button @click="join">
-      Join
-    </button>
-    <button @click="recover">
-      Recover
-    </button>
-    <button @click="resetUsed">
-      Reset Used
-    </button>
-    <button class="draw" @click="draw">
-      Draw
-    </button>
-    <WordsList v-if="admin" />
+    <template v-if="!connected">
+      <input
+        v-model="name"
+        type="text"
+        placeholder="room name"
+        @keydown.enter="create"
+      >
+      <button @click="create">
+        Create
+      </button>
+      <button @click="join">
+        Join
+      </button>
+
+      <button @click="recover">
+        Recover
+      </button>
+
+      <div v-if="askForPwd" class="pwd">
+        <input
+          v-model="roomPwd"
+          type="text"
+          placeholder="password"
+          @keydown.enter="recover"
+        >
+      </div>
+    </template>
+    <template v-else>
+      <button @click="leave">
+        Leave room
+      </button>
+      <div class="draw">
+        <button class="drawBtn" @click="draw">
+          Draw
+        </button>
+        <h1 class="drawResult">
+          {{ drawResult }}
+        </h1>
+      </div>
+
+
+      <WordsList v-if="admin" ref="wordsList" />
+    </template>
   </div>
 </template>
 
@@ -30,27 +56,41 @@ export default {
   },
   data() {
     return {
-      name: 'test',
+      name: '',
+      roomPwd: undefined,
+      askForPwd: false,
       admin: false,
+      connected: false,
       drawResult: '',
       list: [],
       used: [],
     };
   },
   mounted() {
-    console.log(this.$route.params);
     const { room } = this.$route.params;
     if (room) {
       this.name = room;
+    }
+    if (room || document.cookie) {
       this.join();
-      this.router.push('/');
+      if (room) {
+        this.$router.replace('/');
+      }
     }
   },
   methods: {
     join() {
-      axios.post(`http://localhost:3000/api/join/${this.name}`)
-        .then(() => {
-          this.admin = false;
+      axios.post('http://localhost:3000/api/join', { roomName: this.name, roomPwd: this.roomPwd })
+        .then((res) => {
+          this.admin = res.data.authenticated;
+
+          // wrong password on recover
+          if (this.roomPwd && !this.admin) {
+            console.warn('wrong pwd');
+            this.wrondPwd = true;
+          }
+
+          this.connected = true;
           console.log('Join room ok');
           return true;
         })
@@ -67,6 +107,7 @@ export default {
         .then(
           (res) => {
             this.admin = true;
+            this.connected = true;
             console.log('Room created pwd: ', res.data);
           },
         ).catch((err) => {
@@ -75,42 +116,37 @@ export default {
           }
         });
     },
-    async recover() {
-      if (await this.join()) {
-        this.askForPin = true;
+    recover() {
+      if (this.roomPwd) {
+        this.join();
       } else {
-        this.roomNotFound = true;
+        this.askForPwd = true;
       }
-    },
-    auth() {
-      axios.post('http://localhost:3000/api/auth', { pwd: this.pwd })
-        .then(
-          (res) => {
-            this.wrongPwd = false;
-            this.admin = true;
-            console.log(res.data);
-          },
-        )
-        .catch((err) => {
-          console.log(err.response.status);
-          this.wrongPwd = true;
-        });
     },
     draw() {
       axios.get('http://localhost:3000/api/draw')
         .then(
           (res) => {
             console.log(res.data);
+            this.drawResult = res.data.result;
+            if (this.admin) {
+              this.$refs.wordsList.setUsed(res.data.used);
+            }
           },
-        );
+        )
+        .catch((err) => {
+          if (err.response.status === 404) {
+            this.drawResult = 'List is empty';
+          } else {
+            this.drawResult = 'Internal error';
+          }
+        });
     },
-    resetUsed() {
-      axios.post('http://localhost:3000/api/reset')
-        .then(
-          () => {
-            console.log('Reset ok');
-          },
-        );
+    leave() {
+      this.connected = false;
+      this.admin = false;
+      this.roomName = '';
+      this.roomPwd = undefined;
     },
 
   },
@@ -127,6 +163,9 @@ body
   padding: 5% 10%
   font-family: Arial, Helvetica, sans-serif
   font-size: 1.4rem
+  color: white
+  background: #222
+
 
 button
   background: white
@@ -137,5 +176,16 @@ button
 
 <style scoped lang="sass">
 .draw
-  border-color: red
+  margin: 1em 0
+
+.drawBtn
+  padding: 2em 5em
+  border-radius: 3em
+
+.drawResult
+  text-align: center
+  padding: 0.2em
+  border: 2px solid red
+  border-radius: 1em
+
 </style>
