@@ -123,7 +123,9 @@ export default {
     get() {
       axios.get(`${process.env.VUE_APP_URL}/api/list`)
         .then((res) => {
-          this.separatorText = res.data.separatorText;
+          if (res.data.separatorText) {
+            this.separatorText = res.data.separatorText;
+          }
           this.list = res.data.list;
           this.listToText();
         });
