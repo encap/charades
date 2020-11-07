@@ -4,12 +4,13 @@ const bodyParser = require('body-parser');
 const cookieParser = require('cookie-parser');
 const cors = require('cors');
 
+require('dotenv').config();
 const { MongoClient } = require('mongodb');
 
 const app = express();
 const http = require('http').Server(app);
 
-const PATH = path.join(__dirname, '../dist');
+const PATH = path.join(__dirname, '/dist');
 const PROD = process.env.NODE_ENV === 'production';
 
 app.use(cors());
@@ -28,8 +29,8 @@ if (PROD) {
 
 app.use(bodyParser.json());
 
-const dbPwd = 'a8aCoEew6UosPBOs';
-const uri = `mongodb+srv://dbUser:${dbPwd}@cluster0.lgvkp.mongodb.net/main?retryWrites=true&w=majority`;
+
+const uri = process.env.DB_URI;
 const client = new MongoClient(uri, { useNewUrlParser: true });
 
 client.connect(() => {
@@ -39,22 +40,30 @@ client.connect(() => {
     .toArray()
     .then((collections) => collections.some((collection) => collection.name === roomName));
 
-  const auth = async () => true;
+  const auth = (roomName, roomPwd) => db.collection(roomName)
+    .findOne({ pwd: roomPwd.toString() }, { projection: { pwd: 1, _id: 0 } })
+    .then((data) => data !== null);
 
   app.post('/api/join', async (req, res) => {
     const roomName = req.body.roomName || req.cookies.roomName;
 
-    res.cookie('roomName', roomName, { maxAge: 2592000 });
-
     if (await doesRoomExist(roomName)) {
       const roomPwd = req.body.roomPwd || req.cookies.roomPwd;
-      console.log(roomPwd);
+
       let authenticated = false;
-      if (roomPwd && await auth(roomName, roomPwd)) {
-        authenticated = true;
-        res.cookie('roomPwd', roomPwd, { maxAge: 2592000 });
+
+      if (roomPwd) {
+        authenticated = await auth(roomName, roomPwd);
+        if (authenticated) {
+          res.cookie('roomPwd', roomPwd, { maxAge: 2592000 });
+          res.cookie('roomName', roomName, { maxAge: 2592000 });
+        }
+      } else {
+        res.cookie('roomName', roomName, { maxAge: 2592000 });
       }
-      res.status(200).send({ authenticated });
+
+
+      res.status(200).send({ roomName, authenticated });
     } else {
       res.status(404).send('Room not found');
     }
@@ -62,8 +71,8 @@ client.connect(() => {
 
   app.post('/api/create', async (req, res) => {
     const room = {
-      name: req.body.name,
-      pwd: Math.round(Math.random() * 1000),
+      name: req.body.roomName,
+      pwd: Math.round(Math.random() * 1000).toString(),
       list: [],
     };
 
@@ -84,18 +93,30 @@ client.connect(() => {
 
   app.post('/api/list', (req, res) => {
     const { roomName } = req.cookies;
-    console.log(roomName);
-    const { list } = req.body;
+    const { list, overWrite } = req.body;
     const { separatorText } = req.body;
 
+    const convertedList = list.map((text) => ({ text }));
 
-    db.collection(roomName).updateOne({},
-      {
+    let operation = {
+      $push: {
+        list: {
+          $each: convertedList,
+        },
+      },
+      $set: {
+        separatorText,
+      },
+    };
+    if (overWrite) {
+      operation = {
         $set: {
-          list,
+          list: convertedList,
           separatorText,
         },
-      })
+      };
+    }
+    db.collection(roomName).updateOne({}, operation)
       .then(() => {
         res.status(200).end();
       }).catch((err) => {
@@ -106,23 +127,92 @@ client.connect(() => {
 
   app.get('/api/list', async (req, res) => {
     const { roomName } = req.cookies;
-    const collection = await db.collection(roomName).findOne({});
-    const data = {
-      list: collection.list,
-      separatorText: collection.separatorText,
-    };
+    const data = await db.collection(roomName).findOne({}, { projection: { name: 0, pwd: 0, _id: 0 } });
 
     res.send(data);
+  });
+
+  app.get('/api/draw', (req, res) => {
+    const { roomName } = req.cookies;
+
+
+    const cursor = db.collection(roomName).aggregate(
+      [
+        { $unwind: '$list' },
+        {
+          $match: {
+            'list.used': { $exists: false },
+          },
+        },
+        { $sample: { size: 1 } },
+        { $project: { list: 1, _id: 1 } },
+      ],
+    );
+
+    cursor.toArray().then(([data]) => {
+      if (data) {
+        const { list } = data;
+        const text = list.text.toString();
+
+        db.collection(roomName).updateOne(
+          // {
+          // $and: [
+          // {
+          //   'list.text': {
+          //     $eq: text,
+          //   },
+          // },
+          {
+            list: {
+              $elemMatch: {
+                text,
+                used: { $exists: false },
+              },
+            },
+          // ],
+          },
+          {
+            $inc: {
+              'list.$.used': 1,
+            },
+          },
+        );
+
+        res.status(200).send(text);
+      } else {
+        res.sendStatus(404);
+      }
+    });
+  });
+
+  app.get('/api/used', async (req, res) => {
+    const { roomName } = req.cookies;
+
+    const [results] = await db.collection(roomName).aggregate(
+      [
+        {
+          $project: {
+            used: {
+              $map: {
+                input: '$list',
+                as: 'item',
+                in: '$$item.used',
+              },
+            },
+            _id: 0,
+          },
+        },
+      ],
+    ).toArray();
+    res.status(200).send(results.used);
   });
 
   app.post('/api/reset', (req, res) => {
     const { roomName } = req.cookies;
 
-    db.collection(roomName).updateOne({},
+    db.collection(roomName).updateMany({},
       {
-        $set: {
-          used: [],
-        },
+        $unset: { 'list.$[].used': undefined },
       })
       .then(() => {
         res.status(200).end();
@@ -130,61 +220,6 @@ client.connect(() => {
         console.error(err);
         res.status(500).end();
       });
-  });
-
-  const getUsed = (roomName) => db.collection(roomName)
-    .findOne({}, { projection: { used: 1, _id: 0 } })
-    .then(({ used }) => used);
-
-
-  app.get('/api/draw', (req, res) => {
-    const { roomName, roomPwd } = req.cookies;
-
-    const wasUsed = (word) => db.collection(roomName)
-      .find({ used: word }, { projection: { _id: 1 } })
-      .count();
-    const getRandom = () => {
-      const cursor = db.collection(roomName).aggregate(
-        [
-          { $unwind: '$list' },
-          { $sample: { size: 1 } },
-          { $project: { list: 1, _id: 0 } },
-        ], { cursor: { batchSize: 1 } },
-      );
-
-      cursor.toArray().then(async ([results]) => {
-        if (results) {
-          const data = {
-            result: results.list.toString(),
-          };
-
-          if (await wasUsed(data.result)) {
-            console.log(data.result);
-            getRandom();
-            return;
-          }
-          await db.collection(roomName).updateOne({},
-            {
-              $push: {
-                used: data.result,
-              },
-            });
-          if (await auth(roomName, roomPwd)) {
-            data.used = await getUsed(roomName);
-          }
-          res.send(data);
-        } else {
-          res.sendStatus(404);
-        }
-      });
-    };
-
-    getRandom();
-  });
-
-  app.get('/api/used', async (req, res) => {
-    const used = await getUsed(req.cookies.roomName);
-    res.status(200).send(used);
   });
 
 

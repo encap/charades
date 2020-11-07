@@ -1,7 +1,7 @@
 <template>
   <div class="container">
     <div v-if="list.length" class="used">
-      <h2>Used: {{ used.length }} / {{ list.length }}</h2>
+      <h2>Used: {{ usedCount + tempUsed }} / {{ list.length }}</h2>
 
       <button @click="resetUsed">
         Reset Used
@@ -28,8 +28,12 @@
         height="500"
         spellcheck="false"
       />
-      <button @click="set(true)">
-        Set
+
+      <button @click="overwrite">
+        Overwrite
+      </button>
+      <button @click="append">
+        Append
       </button>
       <div class="add-one">
         <input v-model="oneText" type="text" @keydown.enter="addOne">
@@ -55,86 +59,103 @@ export default {
       separatorText: ', ',
       used: [],
       hideList: false,
+      tempUsed: 0,
     };
   },
-  // computed: {
-  //   separatorText() {
-  //     return this.separatorOptions[this.separatorIndex];
-  //   },
-  // },
+  computed: {
+    usedCount() {
+      return this.list.reduce((acc, item) => (item.used ? acc + 1 : acc), 0);
+    },
+  },
   watch: {
     separatorText(current, previous) {
       if (this.listText) {
-        this.listText = this.filter(this.listText.split(previous)).join(current);
+        this.listText = this.listToArray(previous).join(current);
       }
     },
   },
   mounted() {
     this.get();
-    this.getUsed();
-    window.setInterval(this.getUsed, 1000 * 60);
+    window.setInterval(this.getUsed, 1000 * 30);
   },
   methods: {
-    filter(arr) {
-      return arr.map((item) => item.trim())
-        .filter((item) => item.length);
+    listToArray(separator = this.separatorText) {
+      return this.listText
+        .split(separator)
+        .map((text) => text.trim())
+        .filter((text) => text.length);
     },
-    set(upload) {
-      this.list = this.filter(this.listText
-        .split(this.separatorText));
-
-      if (upload) {
-        this.updateList();
+    convert(list, direction) {
+      if (direction) {
+        return list.map((text) => ({ text }));
       }
+      return list.map((item) => item.text);
+    },
+    overwrite() {
+      this.list = this.convert(this.listToArray(), true);
+      this.updateList(this.listToArray(), true);
+    },
+    append() {
+      const list = this.listToArray();
+      this.updateList(list);
+      this.listToText();
     },
     addOne() {
-      if (!this.oneText.length) {
+      const trimmed = this.oneText.trim();
+      if (!trimmed.length) {
         return;
       }
-      this.list.push(this.oneText);
-      this.listText += this.separatorText + this.oneText;
+      this.listText += (this.listText.length ? this.separatorText : '') + trimmed;
+      this.updateList([trimmed]);
+
       this.oneText = '';
-      this.updateList();
     },
-    updateList() {
-      axios.post('http://localhost:3000/api/list', { list: this.list, separatorText: this.separatorText })
+    updateList(list, overWrite = false) {
+      if (!overWrite) {
+        this.list.push(...this.convert(list, true));
+      }
+
+      axios.post('http://localhost:3000/api/list', { overWrite, list, separatorText: this.separatorText })
         .then(() => {
-          console.log('list updated', this.list);
+          console.log('update ok');
         });
     },
     get() {
       axios.get('http://localhost:3000/api/list')
         .then((res) => {
+          this.separatorText = res.data.separatorText;
           this.list = res.data.list;
-          if (this.list.length) {
-            if (res.data.separatorText) {
-              this.separatorText = res.data.separatorText;
-            }
-
-            this.listText = this.list.join(this.separatorText);
-          }
+          this.listToText();
         });
     },
+    listToText() {
+      this.listText = this.convert(this.list, false).join(this.separatorText);
+    },
     resetUsed() {
-      this.used = [];
+      this.list = this.list.map((item) => ({ text: item.text }));
+      this.tempUsed = 0;
       axios.post('http://localhost:3000/api/reset')
-        .then(
-          () => {
-            console.log('Reset ok');
-          },
-        );
+        .then(() => {
+          console.log('Reset ok');
+        });
     },
     getUsed() {
       axios.get('http://localhost:3000/api/used')
         .then(
           (res) => {
-            console.log('used ', res.data.length);
-            this.setUsed(res.data);
+            if (res.data) {
+              res.data.forEach((state, index) => {
+                if (state) {
+                  this.list[index].used = 1;
+                }
+              });
+              this.tempUsed = 0;
+            }
           },
         );
     },
-    setUsed(used) {
-      this.used = used;
+    incTempUsed() {
+      this.tempUsed += 1;
     },
   },
 };

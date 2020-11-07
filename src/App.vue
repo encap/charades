@@ -2,7 +2,7 @@
   <div id="app">
     <template v-if="!connected">
       <input
-        v-model="name"
+        v-model="roomName"
         type="text"
         placeholder="room name"
         @keydown.enter="create"
@@ -13,6 +13,9 @@
       <button @click="join">
         Join
       </button>
+      <h4 v-if="roomNotFound">
+        Room doesn't exists
+      </h4>
 
       <button @click="recover">
         Recover
@@ -25,12 +28,18 @@
           placeholder="password"
           @keydown.enter="recover"
         >
+        <h4 v-if="wrongPwd">
+          Wrong password
+        </h4>
       </div>
     </template>
     <template v-else>
       <button @click="leave">
-        Leave room
+        Leave {{ roomName }}
       </button>
+      <h4 v-if="returnedRoomPwd ">
+        Admin password: {{ returnedRoomPwd }}
+      </h4>
       <div class="draw">
         <button class="drawBtn" @click="draw">
           Draw
@@ -56,9 +65,12 @@ export default {
   },
   data() {
     return {
-      name: '',
+      roomName: '',
+      returnedRoomPwd: '',
       roomPwd: undefined,
       askForPwd: false,
+      wrongPwd: false,
+      roomNotFound: false,
       admin: false,
       connected: false,
       drawResult: '',
@@ -66,10 +78,18 @@ export default {
       used: [],
     };
   },
+  watch: {
+    roomName() {
+      this.resetErrors();
+    },
+    roomPwd() {
+      this.resetErrors();
+    },
+  },
   mounted() {
     const { room } = this.$route.params;
     if (room) {
-      this.name = room;
+      this.roomName = room;
     }
     if (room || document.cookie) {
       this.join();
@@ -80,35 +100,36 @@ export default {
   },
   methods: {
     join() {
-      axios.post('http://localhost:3000/api/join', { roomName: this.name, roomPwd: this.roomPwd })
+      axios.post('http://localhost:3000/api/join', { roomName: this.roomName, roomPwd: this.roomPwd })
         .then((res) => {
           this.admin = res.data.authenticated;
+          this.roomName = res.data.roomName;
 
           // wrong password on recover
           if (this.roomPwd && !this.admin) {
             console.warn('wrong pwd');
-            this.wrondPwd = true;
+            this.wrongPwd = true;
+            return;
           }
 
           this.connected = true;
           console.log('Join room ok');
-          return true;
         })
         .catch((err) => {
           if (err.response.status === 404) {
             console.error('Room not found');
             this.roomNotFound = true;
-            return false;
           }
         });
     },
     create() {
-      axios.post('http://localhost:3000/api/create', { name: this.name })
+      axios.post('http://localhost:3000/api/create', { roomName: this.roomName })
         .then(
           (res) => {
             this.admin = true;
             this.connected = true;
             console.log('Room created pwd: ', res.data);
+            this.returnedRoomPwd = res.data;
           },
         ).catch((err) => {
           if (err.response.status === 409) {
@@ -127,16 +148,15 @@ export default {
       axios.get('http://localhost:3000/api/draw')
         .then(
           (res) => {
-            console.log(res.data);
-            this.drawResult = res.data.result;
+            this.drawResult = res.data;
             if (this.admin) {
-              this.$refs.wordsList.setUsed(res.data.used);
+              this.$refs.wordsList.incTempUsed();
             }
           },
         )
         .catch((err) => {
           if (err.response.status === 404) {
-            this.drawResult = 'List is empty';
+            this.drawResult = 'The list is empty or every word has been drawn.';
           } else {
             this.drawResult = 'Internal error';
           }
@@ -148,7 +168,10 @@ export default {
       this.roomName = '';
       this.roomPwd = undefined;
     },
-
+    resetErrors() {
+      this.wrongPwd = false;
+      this.roomNotFound = false;
+    },
   },
 };
 </script>
@@ -158,6 +181,7 @@ export default {
   box-sizing: border-box
   padding: 0
   margin: 0
+  outline: none
 
 body
   padding: 5% 10%
@@ -175,6 +199,12 @@ button
 </style>
 
 <style scoped lang="sass">
+input
+  background: none
+  font-size: inherit
+  padding: 0.2em
+  color: inherit
+
 .draw
   margin: 1em 0
 
