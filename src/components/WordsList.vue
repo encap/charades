@@ -115,13 +115,13 @@ export default {
         this.list.push(...this.convert(list, true));
       }
 
-      axios.post('http://localhost:3000/api/list', { overWrite, list, separatorText: this.separatorText })
+      axios.post(`${process.env.VUE_APP_URL}/api/list`, { overWrite, list, separatorText: this.separatorText })
         .then(() => {
           console.log('update ok');
         });
     },
     get() {
-      axios.get('http://localhost:3000/api/list')
+      axios.get(`${process.env.VUE_APP_URL}/api/list`)
         .then((res) => {
           this.separatorText = res.data.separatorText;
           this.list = res.data.list;
@@ -134,13 +134,13 @@ export default {
     resetUsed() {
       this.list = this.list.map((item) => ({ text: item.text }));
       this.tempUsed = 0;
-      axios.post('http://localhost:3000/api/reset')
+      axios.post(`${process.env.VUE_APP_URL}/api/reset`)
         .then(() => {
           console.log('Reset ok');
         });
     },
     getUsed() {
-      axios.get('http://localhost:3000/api/used')
+      axios.get(`${process.env.VUE_APP_URL}/api/used`)
         .then(
           (res) => {
             if (res.data) {

@@ -100,7 +100,7 @@ export default {
   },
   methods: {
     join() {
-      axios.post('http://localhost:3000/api/join', { roomName: this.roomName, roomPwd: this.roomPwd })
+      axios.post(`${process.env.VUE_APP_URL}/api/join`, { roomName: this.roomName, roomPwd: this.roomPwd })
         .then((res) => {
           this.admin = res.data.authenticated;
           this.roomName = res.data.roomName;
@@ -118,12 +118,16 @@ export default {
         .catch((err) => {
           if (err.response.status === 404) {
             console.error('Room not found');
-            this.roomNotFound = true;
+            if (this.roomName.length) {
+              this.roomNotFound = true;
+            } else if (document.cookie) {
+              document.cookie = 'roomName=;expires=Thu, 01 Jan 1970 00:00:00 GMT';
+            }
           }
         });
     },
     create() {
-      axios.post('http://localhost:3000/api/create', { roomName: this.roomName })
+      axios.post(`${process.env.VUE_APP_URL}/api/create`, { roomName: this.roomName })
         .then(
           (res) => {
             this.admin = true;
@@ -145,7 +149,7 @@ export default {
       }
     },
     draw() {
-      axios.get('http://localhost:3000/api/draw')
+      axios.get(`${process.env.VUE_APP_URL}/api/draw`)
         .then(
           (res) => {
             this.drawResult = res.data;
