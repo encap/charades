@@ -16,6 +16,7 @@ const PROD = process.env.NODE_ENV === 'production';
 app.use(cors());
 app.use(cookieParser());
 // redirect to https
+app.enable('trust proxy'); // trust heroku and cloudflare
 if (PROD) {
   app.use((req, res, next) => {
     if (req.protocol === 'http') {
