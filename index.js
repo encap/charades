@@ -32,7 +32,7 @@ app.use(bodyParser.json());
 
 
 const uri = process.env.DB_URI;
-const client = new MongoClient(uri, { useNewUrlParser: true });
+const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology: true });
 
 client.connect(() => {
   const db = client.db('main');
