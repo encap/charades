@@ -1,66 +1,95 @@
 <template>
-  <div id="app">
-    <template v-if="!connected">
-      <input
-        v-model="roomName"
-        type="text"
-        placeholder="room name"
-        @keydown.enter="create"
-      >
+  <main id="app">
+    <div
+      ref="start"
+      key="start"
+      class="start-container"
+    >
+      <div class="text-input">
+        <input
+          v-model="roomName"
+          type="text"
+          placeholder="room name"
+          @keydown.enter="create"
+        >
+        <label />
+      </div>
       <button @click="create">
-        Create
+        <span>
+          Create
+
+        </span>
       </button>
       <button @click="join">
-        Join
+        <span>
+          Join
+
+        </span>
       </button>
       <h4 v-if="roomNotFound">
         Room doesn't exists
       </h4>
 
       <button @click="recover">
-        Recover
+        <span>
+          Recover
+        </span>
       </button>
 
       <div v-if="askForPwd" class="pwd">
-        <input
-          v-model="roomPwd"
-          type="text"
-          placeholder="password"
-          @keydown.enter="recover"
-        >
+        <div class="text-input">
+          <input
+            v-model="roomPwd"
+            type="text"
+            placeholder="password"
+            @keydown.enter="recover"
+          >
+          <label />
+        </div>
         <h4 v-if="wrongPwd">
           Wrong password
         </h4>
-      </div>
-    </template>
-    <template v-else>
-      <button @click="leave">
-        Leave {{ roomName }}
-      </button>
-      <h4 v-if="returnedRoomPwd ">
-        Admin password: {{ returnedRoomPwd }}
-      </h4>
-      <div class="draw">
-        <button class="drawBtn" @click="draw">
-          Draw
+        <button @click="recover">
+          <span>
+            Ok
+          </span>
         </button>
-        <h1 class="drawResult">
-          {{ drawResult }}
-        </h1>
       </div>
+    </div>
+    <transition :duration="1000">
+      <div
+        v-if="connected"
+        key="connected"
+        ref="connected"
+        class="connected-container"
+      >
+        <button @click="leave">
+          <span>
+            Leave {{ roomName }}
+          </span>
+        </button>
+        <h4 v-if="returnedRoomPwd ">
+          Admin password: {{ returnedRoomPwd }}
+        </h4>
 
 
-      <WordsList v-if="admin" ref="wordsList" />
-    </template>
-  </div>
+        <DrawWord @draw="() => $refs.wordsList ? $refs.wordsList.incTempUsed : null" />
+
+        <WordsList v-if="admin" ref="wordsList" />
+      </div>
+    </transition>
+  </main>
 </template>
 
 <script>
 import axios from 'axios';
+
+import DrawWord from '@/components/DrawWord.vue';
 import WordsList from '@/components/WordsList.vue';
 
 export default {
   components: {
+    DrawWord,
     WordsList,
   },
   data() {
@@ -73,9 +102,6 @@ export default {
       roomNotFound: false,
       admin: false,
       connected: false,
-      drawResult: '',
-      list: [],
-      used: [],
     };
   },
   watch: {
@@ -84,6 +110,13 @@ export default {
     },
     roomPwd() {
       this.resetErrors();
+    },
+    connected(current) {
+      this.$nextTick(() => {
+        const el = current ? this.$refs.connected : this.$refs.start;
+        console.log(el);
+        el.scrollIntoView({ behavior: 'smooth' });
+      });
     },
   },
   mounted() {
@@ -148,24 +181,7 @@ export default {
         this.askForPwd = true;
       }
     },
-    draw() {
-      axios.get(`${process.env.VUE_APP_URL}/api/draw`)
-        .then(
-          (res) => {
-            this.drawResult = res.data;
-            if (this.admin) {
-              this.$refs.wordsList.incTempUsed();
-            }
-          },
-        )
-        .catch((err) => {
-          if (err.response.status === 404) {
-            this.drawResult = 'The list is empty or every word has been drawn.';
-          } else {
-            this.drawResult = 'Internal error';
-          }
-        });
-    },
+
     leave() {
       this.connected = false;
       this.admin = false;
@@ -181,45 +197,58 @@ export default {
 </script>
 
 <style lang="sass">
-*
+*, ::before, ::after
   box-sizing: border-box
   padding: 0
   margin: 0
   outline: none
 
 body
-  padding: 5% 10%
   font-family: Arial, Helvetica, sans-serif
-  font-size: 1.4rem
+  font-size: 1.2rem
   color: white
-  background: #222
+  background: radial-gradient(ellipse at center, $bg-color, darken($bg-color, 2%))
+  display: flex
+  justify-content: space-around
+  align-items: center
+  height: 200vh
+  width: 100vw
 
+button, input[type="radio"]
+  cursor: pointer;
 
-button
-  background: white
-  border: 2px solid grey
-  padding: 5px 10px
-  margin: 10px
+button, input[type="text"]
+  text-align: center
 </style>
 
 <style scoped lang="sass">
-input
-  background: none
-  font-size: inherit
-  padding: 0.2em
-  color: inherit
+main
+  height: 200vh
+  width: 100vw
 
-.draw
-  margin: 1em 0
+.start-container
+  height: 100vh
+  padding: 5%
+  display: flex
+  flex-direction: column
+  justify-content: space-around
+  margin: 0 auto
+  max-width: 500px
 
-.drawBtn
-  padding: 2em 5em
-  border-radius: 3em
+  button
+    @include big-btn
 
-.drawResult
-  text-align: center
-  padding: 0.2em
-  border: 2px solid red
-  border-radius: 1em
+
+.connected-container
+  position: sticky
+  top: 105vh
+  padding: 20vh 10vw
+  height: 100vh
+  display: flex
+  flex-direction: column
+  justify-content: space-around
+
+.text-input
+  @include text-input
 
 </style>
