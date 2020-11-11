@@ -4,6 +4,13 @@ $bg-color: #1f242b
 $white: #efefef
 $grey: desaturate(lighten($bg-color, 30%), 10%)
 
+@keyframes spin
+  0%
+    transform: scale(1) rotate(0deg)
+  50%
+    transform: scale(0.8) rotate(160deg)
+  100%
+    transform: scale(1) rotate(359deg)
 
 @mixin btn-border-drawing($color: #ccc, $hover: black, $width: 2px, $duration: 0.3s, $back-duration: $duration/2)
   box-shadow: inset 0 0 0 $width $color
@@ -102,15 +109,9 @@ $grey: desaturate(lighten($bg-color, 30%), 10%)
 
     span:after
       opacity: 1
-      animation: rotation 1s infinite cubic-bezier(.51,.59,.57,.65)
+      animation: spin 1s infinite cubic-bezier(.51,.59,.57,.65)
       animation-delay: -0.6s
-      @keyframes rotation
-        0%
-          transform: scale(1) rotate(0deg)
-        50%
-          transform: scale(0.8) rotate(160deg)
-        100%
-          transform: scale(1) rotate(359deg)
+     
 
     &:not(:hover):not(:active)
       box-shadow: inset 0 0 0 $border-width $blue
@@ -124,12 +125,15 @@ $grey: desaturate(lighten($bg-color, 30%), 10%)
 
 
 @mixin text-input
+  max-width: 100%
+  height: min-content
   position: relative
   overflow: hidden
 
+
   input[type="text"]
     margin: 0.5em
-    width: 100%
+    max-width: 9em
     text-align: left
     font-family: inherit
     background: none
@@ -137,13 +141,15 @@ $grey: desaturate(lighten($bg-color, 30%), 10%)
     color: $white
     font-size: 1.25rem
     position: relative
+    letter-spacing: 0.05em
+
 
     &:focus
       outline: none
         
       & + label
         transform: translateX(0)
-        transition: transform 0.3s ease-in-out
+        transition: transform 0.6s ease-in-out
 
 
     &::placeholder
@@ -158,3 +164,11 @@ $grey: desaturate(lighten($bg-color, 30%), 10%)
     transform: translateX(-50%)
     background: linear-gradient(to right, $blue 50.01%, $white 50.01%)
     transition: transform 0.15s ease-in-out
+
+  span
+    position: absolute
+    bottom: 0.5em
+    right: 0.5em
+    color: darken($white, 5%)
+    letter-spacing: 0.05em
+    font-size: 1.25rem

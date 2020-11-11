@@ -4,11 +4,15 @@
       <h2>Used: {{ usedCount + tempUsed }} / {{ list.length }}</h2>
 
       <button @click="resetUsed">
-        Reset Used
+        <span>
+          Reset Used
+        </span>
       </button>
     </div>
     <button class="hide" @click="() => hideList = !hideList">
-      {{ hideList ? 'Show List' : 'Hide List' }}
+      <span>
+        {{ hideList ? 'Show List' : 'Hide List' }}
+      </span>
     </button>
     <div v-show="!hideList" class="list">
       <div class="separator">
@@ -30,15 +34,32 @@
       />
 
       <button @click="overwrite">
-        Overwrite
+        <span>
+          Overwrite
+        </span>
       </button>
       <button @click="append">
-        Append
+        <span>
+          Append
+        </span>
       </button>
       <div class="add-one">
-        <input v-model="oneText" type="text" @keydown.enter="addOne">
+        <div class="text-input" @click="$refs.addOne.focus()">
+          <input
+            ref="addOne"
+            v-model="oneText"
+            type="text"
+            class="add-one-input"
+            placeholder="Add One"
+            @keydown.enter="addOne"
+          >
+          <label />
+        </div>
+
         <button :disabled="!oneText" @click="addOne">
-          Add one
+          <span>
+            Add One
+          </span>
         </button>
       </div>
     </div>
@@ -165,9 +186,15 @@ export default {
 
 
 <style scoped lang="sass">
-label
-  padding: 5px
-  border: 2px solid $green
+button
+  @include btn
+  display: inline-flex
+  margin: 1em 0
+  margin-right: 1em
+
+.separator
+  label
+    padding: 1em
 
 textarea
   margin-top: 2em
@@ -175,7 +202,24 @@ textarea
   height: 500px
   color: white
   background: none
-  font-size: 1.4rem
+  font: inherit
+  letter-spacing: 0.02em
+  font-size: 1.2rem
+
+
+.add-one
+  height: min-content
+  display: flex
+  justify-content: space-between
+  align-items: flex-end
+
+  button
+    margin: 0
+
+  .text-input
+    margin-right: 2em
+    flex-grow: 1
+    @include text-input
 
 
 </style>

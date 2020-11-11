@@ -1,15 +1,19 @@
 <template>
   <div class="draw-container">
-    <button class="drawBtn" @click="draw">
-      Draw
+    <button ref="drawBtn" class="draw-btn" @click="draw">
+      <span>
+        Draw
+      </span>
     </button>
-    <h1 class="drawResult">
+    <h1 class="draw-result">
       {{ drawResult }}
     </h1>
   </div>
 </template>
 <script>
 import axios from 'axios';
+
+const sleep = (t) => new Promise((resolve) => setTimeout(resolve, t));
 
 export default {
   name: 'DrawWord',
@@ -19,12 +23,14 @@ export default {
     };
   },
   methods: {
-    draw() {
+    async draw() {
+      await sleep(1000);
       axios.get(`${process.env.VUE_APP_URL}/api/draw`)
         .then(
           (res) => {
             this.drawResult = res.data;
             this.$emit('draw');
+            this.$refs.drawBtn.blur();
           },
         )
         .catch((err) => {
@@ -33,6 +39,7 @@ export default {
           } else {
             this.drawResult = 'Internal error';
           }
+          this.$refs.drawBtn.blur();
         });
     },
   },
@@ -43,11 +50,13 @@ export default {
 .draw
   margin: 1em 0
 
-.drawBtn
+.draw-btn
   @include big-btn
+  width: 10em
 
-.drawResult
+
+.draw-result
   text-align: center
   padding: 0.2em
-  border: 2px solid green
+  margin-top: 3em
 </style>
