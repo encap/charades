@@ -57,11 +57,9 @@ $grey: desaturate(lighten($bg-color, 30%), 10%)
   font: 500 1em 'Roboto Slab', sans-serif
   padding: .5em 2em
   letter-spacing: 0.05em
-    // background: radial-gradient(circle at center,  transparent 0.1%, $white 0.1%) center
-
-  background: radial-gradient(circle at center,  $white 0.1%, transparent 0.1%) center
-  background-size: 100%
-  transition: background-size 0.2s 0s, color 0.3s 0.1s
+  background: no-repeat center radial-gradient(circle at center, transparent 0%, transparent 0.1%, $white 0.1%, $white 50%, transparent 50%)
+  background-size: 0%
+  transition: background-size 0.5s 0.1s, color 0.3s 0.1s
 
   span:after
     display: block
@@ -72,38 +70,45 @@ $grey: desaturate(lighten($bg-color, 30%), 10%)
     content: ''
     width: 1em
     height: 1em
-    border: $border-width solid $blue
+    border: $border-width solid $white
     margin: -0.5em 0 0 -0.5em
     transform: scale(0)
-    transition: transform 0.4s ease-in-out 0.3s, border-color 0.2s
+    transition: border-color 0.2s 0.1s
 
   &:hover
-    transition: background-size 0.8s 0.3s, color 0.8s 0.3s
-    background-size: 110000%
+    transition: background-size 0.5s 0.2s, color 0.8s 0.3s
+    background-size: 200%
     color: $bg-color
 
-
   &:focus
-    transition: background-size 0.4s 0s, color 0.4s 0s
-    background-size: 100%
+    animation: in 1s
+    animation-fill-mode: forward
+    @keyframes in
+      0%
+        background-size: 200%
+      100%
+        background-size: 100000%
+
+    background-size: 0%
     color: transparent
     box-shadow: inset 0 0 0 $border-width $blue
 
 
     span:after
       opacity: 1
-      transform: scale(1)
-      animation: rotation 2s infinite cubic-bezier(.51,.59,.57,.65)
-      animation-delay: 0.7s
+      animation: rotation 1s infinite cubic-bezier(.51,.59,.57,.65)
+      animation-delay: -0.6s
       @keyframes rotation
         0%
-          transform: rotate(0deg)
+          transform: scale(1) rotate(0deg)
+        50%
+          transform: scale(0.8) rotate(160deg)
         100%
-          transform: rotate(359deg)
+          transform: scale(1) rotate(359deg)
 
-    &:hover
+    &:not(:hover)
       span:after
-        border-color: $white
+        border-color: $blue
 
 @mixin big-btn
   @include btn(3px)

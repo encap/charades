@@ -9,7 +9,7 @@
         <input
           v-model="roomName"
           type="text"
-          placeholder="room name"
+          placeholder="Room Name"
           @keydown.enter="create"
         >
         <label />
