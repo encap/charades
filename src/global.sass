@@ -1,4 +1,4 @@
-$green: #57b158
+$green: #48ad4a
 $blue: #38a5b8
 $bg-color: #1f242b
 $white: #efefef
@@ -50,7 +50,6 @@ $grey: desaturate(lighten($bg-color, 30%), 10%)
   background: none
   position: relative
   border: none
-
   display: flex
   align-items: center
   justify-content: space-around
@@ -96,7 +95,6 @@ $grey: desaturate(lighten($bg-color, 30%), 10%)
         background-size: 100000%
 
     background-size: 0%
-    box-shadow: inset 0 0 0 $border-width $blue
 
     span
       transition: color 0.2s 0s
@@ -114,7 +112,8 @@ $grey: desaturate(lighten($bg-color, 30%), 10%)
         100%
           transform: scale(1) rotate(359deg)
 
-    &:not(:hover)
+    &:not(:hover):not(:active)
+      box-shadow: inset 0 0 0 $border-width $blue
       span:after
         border-color: $blue
 
