@@ -55,8 +55,8 @@ export default {
       list: [],
       listText: '',
       oneText: '',
-      separatorOptions: [[', ', ', '], [',', ','], ['; ', '; '], [';', ';'], ['\n', 'Enter'], [' ', 'Space']],
-      separatorText: ', ',
+      separatorOptions: [[',', ','], [';', ';'], ['\n', 'Enter'], [' ', 'Space']],
+      separatorText: ',',
       used: [],
       hideList: false,
       tempUsed: 0,
@@ -167,13 +167,14 @@ export default {
 <style scoped lang="sass">
 label
   padding: 5px
-  border: 2px solid grey
+  border: 2px solid $green
 
 textarea
+  margin-top: 2em
   width: 500px
   height: 500px
   color: white
-  background: #222
+  background: none
   font-size: 1.4rem
 
 

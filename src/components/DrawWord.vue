@@ -44,12 +44,10 @@ export default {
   margin: 1em 0
 
 .drawBtn
-  padding: 2em 5em
-  border-radius: 3em
+  @include big-btn
 
 .drawResult
   text-align: center
   padding: 0.2em
-  border: 2px solid red
-  border-radius: 1em
+  border: 2px solid green
 </style>

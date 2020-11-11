@@ -1,10 +1,9 @@
 $green: #57b158
+$blue: #38a5b8
 $bg-color: #1f242b
 $white: #efefef
 $grey: desaturate(lighten($bg-color, 30%), 10%)
 
-
-		
 
 @mixin btn-border-drawing($color: #ccc, $hover: black, $width: 2px, $duration: 0.3s, $back-duration: $duration/2)
   box-shadow: inset 0 0 0 $width $color
@@ -46,14 +45,17 @@ $grey: desaturate(lighten($bg-color, 30%), 10%)
     &::after
       transition-delay: 0s, $duration, 0s
 
-@mixin big-btn
-  @include btn-border-drawing($green, $white, 3px, .3s)
+@mixin btn($border-width: 2px)
+  @include btn-border-drawing($green, $white, $border-width, .3s)
   background: none
   position: relative
   border: none
   color: $green
-  font: 700 1rem 'Roboto Slab', sans-serif
-  padding: 1em 2em
+  display: flex
+  align-items: center
+  justify-content: space-around
+  font: 500 1em 'Roboto Slab', sans-serif
+  padding: .5em 2em
   letter-spacing: 0.05em
   background: radial-gradient(circle at center,  $white 0.1%, transparent 0.1%) center
   background-size: 100%
@@ -68,7 +70,7 @@ $grey: desaturate(lighten($bg-color, 30%), 10%)
     content: ''
     width: 1em
     height: 1em
-    border: 3px solid $green
+    border: $border-width solid $green
     margin: -0.5em 0 0 -0.5em
     transform: scale(0)
     transition: transform 0.4s ease-in-out 0.3s, border-color 0.2s
@@ -98,6 +100,12 @@ $grey: desaturate(lighten($bg-color, 30%), 10%)
     &:hover
       span:after
         border-color: $white
+
+@mixin big-btn
+  @include btn(3px)
+  padding: 1em 2em
+  font-weight: 700
+
 
 @mixin text-input
   position: relative
@@ -132,5 +140,5 @@ $grey: desaturate(lighten($bg-color, 30%), 10%)
     height: 3px
     width: 200%
     transform: translateX(-50%)
-    background: linear-gradient(to right, $green 50%, $white 50%)
+    background: linear-gradient(to right, $blue 50.01%, $white 50.01%)
     transition: transform 0.15s ease-in-out
