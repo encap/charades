@@ -21,13 +21,11 @@
         <button @click="create">
           <span>
             Create
-
           </span>
         </button>
         <button @click="join">
           <span>
             Join
-
           </span>
         </button>
 
