@@ -121,7 +121,7 @@ export default {
     async separatorText(current, previous) {
       console.log('SEP ', `'${previous}'`, `'${current}'`);
 
-      if (current !== this.customSeparatorText && !current.match(/^[,;/ ]$/)) {
+      if (current !== this.customSeparatorText && current.match(/^[,;\n ]$/)) {
         this.customToggle = false;
       }
 
@@ -139,7 +139,7 @@ export default {
     // eslint-disable-next-line no-unused-vars
     customSeparatorText(current, previous) {
       console.log('CUSTOM ', current.length, `'${this.separatorText}'`);
-      if (this.customToggle && current.length && !current.match(/^[,;/ ]$/)) {
+      if (this.customToggle && current.length && !current.match(/^[,;\n ]$/)) {
         console.log('CUSTOM ACTIVE');
         this.history.unshift({
           separatorText: this.separatorText,
@@ -150,17 +150,19 @@ export default {
     },
     async customToggle(current) {
       if (current) {
-        if (!this.customSeparatorText.length) {
-          console.log('input empty, set focus');
-          await sleep(300);
-          this.$refs.customSeparatorInput.focus();
-        } else {
+        console.log('input empty, set focus');
+        await sleep(300);
+        this.$refs.customSeparatorInput.focus();
+        if (this.customSeparatorText) {
           this.history.unshift({
             separatorText: this.separatorText,
             list: this.list,
           });
           this.separatorText = this.customSeparatorText;
         }
+      } else {
+        console.log('OFF');
+        this.history = [];
       }
     },
     list() {
@@ -223,7 +225,7 @@ export default {
         .then((res) => {
           const separator = res.data.separatorText;
           if (separator.length) {
-            if (separator.match(/^[,;/ ]$/)) {
+            if (separator.match(/^[,;\n ]$/)) {
               this.separatorText = res.data.separatorText;
             } else {
               this.customToggle = true;
@@ -271,7 +273,12 @@ export default {
     undo() {
       const snapshot = this.history.shift();
       this.list = snapshot.list;
+      console.log(snapshot.separatorText);
+      if (snapshot.separatorText.match(/^[,;\n ]$/)) {
+        this.customToggle = false;
+      }
       this.separatorText = snapshot.separatorText;
+      this.$refs.customSeparatorInput.focus();
     },
   },
 };
@@ -328,6 +335,7 @@ button:not(.undo)
     .options
       transform: translateX(10.5em) // + margin
       display: flex
+      align-items: center
 
       h3
         font-size: 1.25rem

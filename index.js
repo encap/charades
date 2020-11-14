@@ -50,7 +50,6 @@ client.connect(() => {
 
     if (await doesRoomExist(roomName)) {
       const roomPwd = req.body.roomPwd || req.cookies.roomPwd;
-
       let authenticated = false;
 
       if (roomPwd) {
@@ -73,7 +72,7 @@ client.connect(() => {
   app.post('/api/create', async (req, res) => {
     const room = {
       name: req.body.roomName,
-      pwd: Math.floor(100 + (Math.random() * 900)),
+      pwd: Math.floor(100 + (Math.random() * 900)).toString(),
       list: [],
     };
 
