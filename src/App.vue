@@ -89,27 +89,52 @@
               Leave {{ roomName }}
             </span>
           </button>
-          <button v-if="admin" class="toggle-admin-btn" @click="toggleAdmin">
+          <button
+            v-if="admin"
+            class="toggle-admin-btn"
+            style="pointer-events: none"
+            @click="toggleAdmin"
+          >
             <span>
               {{ showAdmin ? 'Hide admin panel' : 'Show admin panel' }}
             </span>
           </button>
         </div>
 
-        <div v-if="returnedRoomPwd ">
-          <h3>
-            Admin password: {{ returnedRoomPwd }}
-          </h3>
-          <p>
-            You will need this if you want to manage room from another device.
-          </p>
-        </div>
+        <template v-if="admin">
+          <div v-if="listLength !== null" class="used">
+            <h2 class="used-count">
+              Used: {{ usedCount + tempUsed }} / {{ listLength }}
+            </h2>
+
+            <button @click="resetUsed">
+              <span>
+                Reset Used
+              </span>
+            </button>
+          </div>
+
+
+          <div v-if="returnedRoomPwd && !listLength">
+            <h3>
+              Admin password: {{ returnedRoomPwd }}
+            </h3>
+            <p>
+              You will need this if you want to manage room from another device.
+            </p>
+          </div>
+        </template>
       </div>
 
-      <main class="main-container">
-        <WordsList v-if="admin" ref="wordsList" class="panel" />
+      <main class="main-container" :class="{'hide-list': hideList}">
+        <WordsList
+          v-if="admin"
+          ref="wordsList"
+          class="panel words-list"
+          @used="updateUsed"
+        />
 
-        <DrawWord class="panel" @draw="() => $refs.wordsList ? $refs.wordsList.incTempUsed : null" />
+        <DrawWord class="panel" :admin="admin" @draw="tempUsed += 1" />
       </main>
     </div>
   </main>
@@ -122,6 +147,7 @@ import DrawWord from '@/components/DrawWord.vue';
 import WordsList from '@/components/WordsList.vue';
 
 const sleep = (t) => new Promise((resolve) => setTimeout(resolve, t));
+// const sleep = () => new Promise((resolve) => setTimeout(resolve, 50));
 export default {
   components: {
     DrawWord,
@@ -139,13 +165,20 @@ export default {
       connected: false,
       showAdmin: true,
       loading: false,
+      tempUsed: 0,
+      usedCount: 0,
+      listLength: null,
+      hideList: false,
     };
   },
   watch: {
     connected(current) {
       this.$nextTick(async () => {
-        const el = current ? this.$refs.connected : this.$refs.start;
-        el.scrollIntoView({ behavior: 'smooth' });
+        window.scrollTo({
+          top: current ? document.body.scrollHeight : 0,
+          behavior: 'smooth',
+        });
+
         if (this.admin) {
           document.querySelector('.add-one-input').focus({ preventScroll: true });
         }
@@ -171,6 +204,12 @@ export default {
     } else {
       setTimeout(() => this.focusName, 500);
     }
+
+    window.addEventListener('resize', () => {
+      if (this.connected) {
+        this.$refs.connected.scrollIntoView({ behavior: 'auto' });
+      }
+    });
   },
   methods: {
     focusName() {
@@ -276,7 +315,10 @@ export default {
         this.askForPwd = true;
       }
     },
-
+    resetErrors() {
+      this.roomNameMsg = '';
+      this.roomPwdMsg = '';
+    },
     leave() {
       this.connected = false;
       this.admin = false;
@@ -284,11 +326,15 @@ export default {
       this.roomPwd = undefined;
     },
     toggleAdmin() {
-      console.log('toggle');
+      this.hideList = !this.hideList;
     },
-    resetErrors() {
-      this.roomNameMsg = '';
-      this.roomPwdMsg = '';
+    updateUsed(data) {
+      this.tempUsed = 0;
+      this.usedCount = data.usedCount;
+      this.listLength = data.listLength;
+    },
+    resetUsed() {
+      this.$refs.wordsList.resetUsed();
     },
   },
 };
@@ -413,7 +459,7 @@ main
 
 .connected-container
   position: sticky
-  top: 105vh
+  top: 100vh
   height: 100vh
   padding: 1em
   font-size: 1rem
@@ -430,18 +476,24 @@ main
     display: flex
     align-items: center
     justify-content: space-between
+    flex-wrap: wrap
 
-    .buttons
-      display: flex
+    .buttons, .used
+      display: inline-flex
+      align-items: center
 
       button
         @include btn
         padding: .5em 2em
         font-weight: 500
 
-        &.leave-btn
-          margin-right: 1em
-          width: 10em
+      .leave-btn, .used-count
+        margin-right: 2em
+        width: 10em
+
+      .used-count
+        text-align: right
+
 
   .main-container
     padding-top: 2em
@@ -452,13 +504,32 @@ main
     justify-content: space-between
     overflow: hidden
     width: calc(100vw - 2em)
-    transition: transform 2s ease-in-out
 
     .panel
       height: 100%
+      flex-grow: 1
+
+    .words-list
+      transition: transform .5s ease-in-out 1s
+      margin-right: 10em
 
     .panel:last-child
-      max-width: 20em
+      // max-width: 20em
+      // flex-grow: 0
+      // transition: all 0.7s ease-in-out 0s // todo find specific
+
+    &.hide-list
+
+      .words-list
+        transition: transform .5s ease-in-out 0s
+        transform: translateX(-100%)
+
+      .panel:last-child
+        transition: all 1s ease-in-out 0.5s // todo find specific
+        // min-width: calc(100vw - 2em)
+        flex-basis: calc(100vw - 2em)
+        flex-grow: 1
+        transform: translateX(calc(-50vw - 0.5em))
 
 
 </style>

@@ -1,25 +1,39 @@
 <template>
   <div class="draw-container">
-    <button ref="drawBtn" class="draw-btn" @click="draw">
-      <span>
-        Draw
-      </span>
-    </button>
-    <h1 class="draw-result">
-      {{ drawResult }}
-    </h1>
+    <div class="wrapper">
+      <button ref="drawBtn" class="draw-btn" @click="draw">
+        <span>
+          Draw
+        </span>
+      </button>
+      <h1 v-show="drawResults" class="draw-result">
+        {{ drawResults }}
+      </h1>
+      <h3 v-if="admin && !drawResults">
+        Players will only see this button
+      </h3>
+      <h4 v-show="drawResults === false" class="error">
+        The list is empty or every word has been drawn.
+      </h4>
+    </div>
   </div>
 </template>
 <script>
 import axios from 'axios';
 
 const sleep = (t) => new Promise((resolve) => setTimeout(resolve, t));
+// const sleep = () => new Promise((resolve) => setTimeout(resolve, 50));
 
 export default {
   name: 'DrawWord',
+  props: {
+    admin: {
+      type: Boolean,
+    },
+  },
   data() {
     return {
-      drawResult: '',
+      drawResults: '',
     };
   },
   methods: {
@@ -28,16 +42,16 @@ export default {
       axios.get(`${process.env.VUE_APP_URL}/api/draw`)
         .then(
           (res) => {
-            this.drawResult = res.data;
+            this.drawResults = res.data;
             this.$emit('draw');
             this.$refs.drawBtn.blur();
           },
         )
         .catch((err) => {
           if (err.response.status === 404) {
-            this.drawResult = 'The list is empty or every word has been drawn.';
+            this.drawResults = false;
           } else {
-            this.drawResult = 'Internal error';
+            this.drawResults = 'Internal error';
           }
           this.$refs.drawBtn.blur();
         });
@@ -47,16 +61,27 @@ export default {
 </script>
 
 <style lang="sass" scoped>
-.draw
-  margin: 1em 0
+.draw-container
+  position: relative
+
+.wrapper
+  height: 100%
+  width: 100%
+  padding: 20em 0
+  display: flex
+  flex-direction: column
+  justify-content: space-evenly
+  align-items: center
+  position: relative
+  text-align: center
+  word-wrap: break-word
 
 .draw-btn
-  @include big-btn
-  width: 10em
-
+  @include big-btn($blue)
+  width: 100%
+  max-width: 700px
 
 .draw-result
-  text-align: center
-  padding: 0.2em
-  margin-top: 3em
+  font-size: 3rem
+
 </style>

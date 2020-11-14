@@ -52,8 +52,8 @@ $grey: desaturate(lighten($bg-color, 30%), 10%)
     &::after
       transition-delay: 0s, $duration, 0s
 
-@mixin btn($border-width: 2px)
-  @include btn-border-drawing($green, $white, $border-width, .3s)
+@mixin btn($color: $green, $border-width: 2px)
+  @include btn-border-drawing($color, $white, $border-width, .3s)
   background: none
   position: relative
   border: none
@@ -65,7 +65,19 @@ $grey: desaturate(lighten($bg-color, 30%), 10%)
   letter-spacing: 0.05em
   background: no-repeat center radial-gradient(circle at center, transparent 0%, transparent 0.1%, $white 0.1%, $white 50%, transparent 50%)
   background-size: 0%
+  cursor: pointer
   transition: background-size 0.5s 0.1s 
+  @keyframes in
+      0%
+        background-size: 205%
+      100%
+        background-size: 100000%
+    
+  @keyframes inradio
+    0%
+      background-size: 250%
+    100%
+      background-size: 130000%
 
   span:after
     display: block
@@ -82,30 +94,39 @@ $grey: desaturate(lighten($bg-color, 30%), 10%)
     transition: border-color 0.2s 0.1s
 
   span
-    color: $green
+    color: $color
+    fill: $color
     transition: color 0.3s 0.3s
 
   &:hover
     transition: background-size 0.5s 0.2s 
-    background-size: 200%
     span
-      transition: color 0.3s 0.2s
+      transition: color 0.3s 0.2s, fill 0.3s 0.2s !important
       color: $bg-color
+      fill: $bg-color
 
-  &:focus
-    animation: in 1s
-    animation-fill-mode: forward
-    @keyframes in
-      0%
-        background-size: 200%
-      100%
-        background-size: 100000%
+  &:hover
+    background-size: 205%
+
+  &.radio:hover
+    background-size: 250%
+
+
+  &:focus, &.waiting
+    &:not(.radio)
+      animation: in 1s
+      animation-fill-mode: forwards
+
+    &.radio
+      animation: inradio 1s
+      animation-fill-mode: forwards
 
     background-size: 0%
 
-    span
-      transition: color 0.2s 0s
+    span:not(:hover)
+      transition: color 0.2s 0s, fill 0.1s 0s
       color: transparent
+      fill: transparent
 
     span:after
       opacity: 1
@@ -118,13 +139,16 @@ $grey: desaturate(lighten($bg-color, 30%), 10%)
       span:after
         border-color: $blue
 
-@mixin big-btn
-  @include btn(3px)
+  &.selected
+    box-shadow: inset 0 0 0 $border-width $blue
+
+@mixin big-btn($color: $green)
+  @include btn($color, 3px)
   padding: 1em 2em
   font-weight: 700
 
 
-@mixin text-input
+@mixin text-input($border-width: 3px)
   max-width: 100%
   height: min-content
   position: relative
@@ -146,20 +170,19 @@ $grey: desaturate(lighten($bg-color, 30%), 10%)
 
     &:focus
       outline: none
-        
-      & + label
-        transform: translateX(0)
-        transition: transform 0.6s ease-in-out
-
 
     &::placeholder
       color: $grey
+
+  input[type="text"]:focus + label, .selected
+    transform: translateX(0)
+    transition: transform 0.6s ease-in-out
 
   label
     position: absolute
     bottom: 0
     left: 0
-    height: 3px
+    height: $border-width
     width: 200%
     transform: translateX(-50%)
     background: linear-gradient(to right, $blue 50.01%, $white 50.01%)
