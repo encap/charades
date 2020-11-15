@@ -604,6 +604,8 @@ main
     display: none
 
   .start-container
+    .logo
+      transform: translateX(0.4rem)
     .text-input
       span
         width: 12em
