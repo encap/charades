@@ -1,4 +1,4 @@
-# memory
+# Charades
 
 ## Project setup
 ```

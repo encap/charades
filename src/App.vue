@@ -14,9 +14,9 @@
       <img src="../public/logo.png" alt="logo" class="logo">
       <!-- <div class="logo">
         <h1>
-          MEMORY
+          CHARADES
         </h1>
-        <h2>MULTIPLAYER EDITION</h2>
+        <h2>DRAW MACHINE</h2>
       </div> -->
 
       <div class="text-input" @click="focusName">
@@ -380,6 +380,7 @@ body
   font-family: Arial, Helvetica, sans-serif
   font-size: 1.2rem
   color: white
+  // background: black
   background: radial-gradient(ellipse at center, $bg-color, darken($bg-color, 2%))
   display: flex
   justify-content: space-around
@@ -456,17 +457,19 @@ main
   // .logo
   //   margin: 0 auto
   //   width: min-content
+  //   margin-bottom: 10em
+  //   transform: translateX(0.01px)
+
   //   h1
   //     font-family: 'Minecraft', Arial, sans-serif
 
   //     font-size: 7rem
-  //     letter-spacing: 0.1em
+  //     letter-spacing: 0.05em
   //     text-align: center
   //     // color: $white
 
-
   //   h2
-  //     transform: translateX(1em)
+  //     transform: translateX(0.5em)
   //     margin-top: 0.2em
   //     text-align: right
   //     font-family: 'Munro', Arial, sans-serif
@@ -636,7 +639,7 @@ main
         margin-right: 0
 
       .draw-component
-        height: 100vh
+        height: 80vh
         // scroll-snap-stop: always
-        // scroll-snap-align: end
+        scroll-snap-align: center
 </style>
