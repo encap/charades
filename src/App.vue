@@ -129,7 +129,7 @@
           </div>
 
 
-          <div v-if="returnedRoomPwd && !listLength">
+          <div v-if="returnedRoomPwd && !listLength" class="admin-pwd">
             <h3>
               Admin password: {{ returnedRoomPwd }}
             </h3>
@@ -625,6 +625,8 @@ main
         width: calc(100vw - 2em) !important
       .toggle-admin-btn
         display: none !important
+      .admin-pwd
+        margin-top: 1em
       .used
         display: flex
         justify-content: space-between
