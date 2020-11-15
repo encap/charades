@@ -97,7 +97,7 @@
       :class="{hidden: loading}"
     >
       <div class="top">
-        <div class="buttons">
+        <div class="left-container">
           <button class="leave-btn" @click="leave">
             <span>
               Leave {{ roomName }}
@@ -113,31 +113,27 @@
               {{ hideList ? 'Show admin panel' : 'Hide admin panel' }}
             </span>
           </button>
-        </div>
-
-        <template v-if="admin">
-          <div v-if="listLength !== null" class="used">
-            <h2 class="used-count">
-              Used: {{ usedCount + tempUsed }} / {{ listLength }}
-            </h2>
-
-            <button ref="resetUsed" @click="resetUsed">
-              <span>
-                Reset Used
-              </span>
-            </button>
-          </div>
-
-
-          <div v-if="returnedRoomPwd && !listLength" class="admin-pwd">
+          <div v-if="admin" class="admin-pwd">
             <h3>
-              Admin password: {{ returnedRoomPwd }}
+              Admin password: {{ savedRoomPwd }}
             </h3>
             <p>
               You will need this if you want to manage room from another device.
             </p>
           </div>
-        </template>
+        </div>
+
+        <div v-if="admin && listLength !== null" class="used">
+          <h2 class="used-count">
+            Used: {{ usedCount + tempUsed }} / {{ listLength }}
+          </h2>
+
+          <button ref="resetUsed" @click="resetUsed">
+            <span>
+              Reset Used
+            </span>
+          </button>
+        </div>
       </div>
 
       <div class="main-container" :class="{'hide-list': hideList}">
@@ -178,7 +174,6 @@ export default {
     return {
       roomName: '',
       roomPwd: '',
-      returnedRoomPwd: '',
       askForPwd: false,
       roomNameMsg: '',
       roomPwdMsg: '',
@@ -190,6 +185,12 @@ export default {
       listLength: null,
       hideList: false,
     };
+  },
+  computed: {
+    savedRoomPwd() {
+      // reference this.admin to force recompute
+      return this.admin ? document.cookie.match(/(?<=roomPwd=)\d{3}/)[0].split('').reverse().join('') : '';
+    },
   },
   watch: {
     connected(current) {
@@ -307,11 +308,10 @@ export default {
       }
       axios.post(`${process.env.VUE_APP_URL}/api/create`, { roomName: this.roomName })
         .then(
-          async (res) => {
+          async () => {
             await sleep(500);
             this.admin = true;
             this.connected = true;
-            this.returnedRoomPwd = res.data;
           },
         ).catch((err) => {
           if (err.response.status === 409) {
@@ -395,7 +395,7 @@ button, input[type="radio"]
 button, input[type="text"]
   text-align: center
 
-@media (max-width: 1170px)
+@media (max-width: 1250px)
   body, html
     height: 100vh
     overflow-y: scroll
@@ -542,25 +542,29 @@ main
     transition: none
     opacity: 0
 
-  .top
+  .top, .top .left-container
     display: flex
     align-items: center
     justify-content: space-between
     flex-wrap: wrap
 
-    .buttons, .used
-      display: inline-flex
+    .left-container
+      flex-shrink: 2
+
+    button
+      @include btn
+      padding: .5em 2em
+      font-weight: 500
+      white-space: nowrap
+      margin-right: 2em
+      min-width: 10em
+
+    .used
+      display: flex
+      flex-wrap: nowrap
       align-items: center
-
       button
-        @include btn
-        padding: .5em 2em
-        font-weight: 500
-
-      .leave-btn, .used-count
-        margin-right: 2em
-        width: 10em
-
+        margin: 0 0 0 1em
       .used-count
         text-align: right
 
@@ -599,7 +603,7 @@ main
       .draw-component
         flex-basis: calc(100vw - 2em)
 
-@media (max-width: 1170px)
+@media (max-width: 1250px)
   .author
     display: none
 

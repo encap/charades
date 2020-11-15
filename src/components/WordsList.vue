@@ -73,6 +73,7 @@
           ref="textArea"
           v-model="listText"
           spellcheck="false"
+          placeholder="The list is currently empty. You can add one word at a time above or write or paste large taxt here. Make sure to select separator and then click the button below. &quot;Append&quot; adds current contents of this editor to the list and then displays here all words from list. Number of words in the list will show in the upper-right corner of your screen. Make sure to save a password shown at the very top if you want to edit this list from another device."
         />
       </div>
 
@@ -431,7 +432,7 @@ button:not(.undo)
     button:first-child
       margin-right: 4em
 
-@media (max-width: 1170px)
+@media (max-width: 1250px)
   .add-one-btn
     white-space: nowrap
     overflow: hidden

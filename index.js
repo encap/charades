@@ -42,14 +42,16 @@ client.connect(() => {
     .then((collections) => collections.some((collection) => collection.name === roomName));
 
   const auth = (roomName, roomPwd) => db.collection(roomName)
-    .findOne({ pwd: roomPwd.toString().split('').reverse().join('') }, { projection: { pwd: 1, _id: 0 } })
+    .findOne({ pwd: roomPwd.toString() }, { projection: { pwd: 1, _id: 0 } })
     .then((data) => data !== null);
+
+  const reverse = (string) => string.split('').reverse().join('');
 
   app.post('/api/join', async (req, res) => {
     const roomName = req.body.roomName || req.cookies.roomName;
 
     if (await doesRoomExist(roomName)) {
-      const roomPwd = req.body.roomPwd || req.cookies.roomPwd;
+      const roomPwd = reverse(req.body.roomPwd) || req.cookies.roomPwd;
       let authenticated = false;
 
       if (roomPwd) {
@@ -72,8 +74,7 @@ client.connect(() => {
   app.post('/api/create', async (req, res) => {
     const room = {
       name: req.body.roomName,
-      pwd: Math.floor(100 + (Math.random() * 900)).toString().split('').reverse()
-        .join(''),
+      pwd: reverse(Math.floor(100 + (Math.random() * 900)).toString()),
       list: [],
     };
 
@@ -85,7 +86,7 @@ client.connect(() => {
     db.collection(room.name).insertOne(room).then(() => {
       res.cookie('roomName', room.name, { maxAge: 2592000000 });
       res.cookie('roomPwd', room.pwd, { maxAge: 2592000000 });
-      res.status(200).send(room.pwd.split('').reverse().join(''));
+      res.status(200).end();
     }).catch((err) => {
       console.error(err);
       res.status(500).end();

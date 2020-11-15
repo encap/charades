@@ -5,22 +5,25 @@
         <p>
           Invite your friends by sharing this link:
         </p>
-        <div class="link-wrapper">
-          <input
-            ref="joinLink"
-            type="text"
-            readonly
-            :value="joinUrl"
-          >
-          <label :class="{selected: copied}" />
-        </div>
+        <div class="link-row">
+          <div class="text-input">
+            <input
+              ref="joinLink"
+              type="text"
+              readonly
+              :value="joinUrl"
+            >
+            <label :class="{selected: copied}" />
+          </div>
 
-        <button ref="copyBtn" class="copy-btn" @click="copy">
-          <span>
-            {{ copied ? 'Copied' : 'Copy' }}
-          </span>
-        </button>
+          <button ref="copyBtn" class="copy-btn" @click="copy">
+            <span>
+              {{ copied ? 'Copied' : 'Copy' }}
+            </span>
+          </button>
+        </div>
       </div>
+
 
       <div class="draw">
         <button ref="drawBtn" class="draw-btn" @click="draw">
@@ -32,9 +35,14 @@
           <h1 v-show="drawResults" class="draw-result">
             {{ drawResults }}
           </h1>
-          <h3 v-if="admin && drawResults.length === 0">
-            Players will only see this button
-          </h3>
+          <template v-if="admin && drawResults.length === 0">
+            <p>
+              Each word can only by drawn one time unless you reset used by clicking the button in the upper-right corner.
+            </p>
+            <p>
+              Players will only see the "Draw" button.
+            </p>
+          </template>
           <h4 v-show="drawResults === false" class="error">
             The list is empty or every word has been drawn.
           </h4>
@@ -123,33 +131,32 @@ export default {
   text-align: center
   word-wrap: break-word
 
-.link
-  display: flex
-  flex-wrap: wrap
-  position: relative
-  align-items: flex-end
-  justify-content: space-evenly
-  max-width: 30em
-  margin-bottom: 3em
-  p
-    min-width: 100%
-    margin-bottom: 0.5em
+p, .text-input input[type="text"]
+  min-width: 100%
+  margin-bottom: 0.5em
+  max-width: none
+  font-size: 1.1em
+  text-align: center
 
-  .link-wrapper
+.link
+  width: 100%
+  position: relative
+  max-width: 40em
+  margin-bottom: 3em
+
+  .link-row
+    display: flex
+    width: 100%
+    justify-content: space-between
+
+  .text-input
+    flex-grow: 1
     @include text-input
 
-
-  p, .link-wrapper input[type="text"]
-    max-width: none
-    font-size: 1.1em
-    text-align: center
-
-
   .copy-btn
+    margin-left: 2em
     @include btn($blue)
 
-  .copy-btn, .link-wrapper
-    margin-left: 1em
 
 .draw
   display: flex
