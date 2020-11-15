@@ -118,7 +118,7 @@
               Used: {{ usedCount + tempUsed }} / {{ listLength }}
             </h2>
 
-            <button @click="resetUsed">
+            <button ref="resetUsed" @click="resetUsed">
               <span>
                 Reset Used
               </span>
@@ -353,8 +353,10 @@ export default {
       this.usedCount = data.usedCount;
       this.listLength = data.listLength;
     },
-    resetUsed() {
+    async resetUsed() {
       this.$refs.wordsList.resetUsed();
+      await sleep(800);
+      this.$refs.resetUsed.blur();
     },
   },
 };
