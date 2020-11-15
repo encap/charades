@@ -26,6 +26,7 @@
           type="text"
           placeholder="Room Name"
           maxlength="15"
+          autocapitalize="none"
           @input="resetErrors"
           @keydown.enter="create"
         >
@@ -67,11 +68,13 @@
                   type="text"
                   placeholder="Password"
                   maxlength="3"
+                  autocapitalize="none"
+                  inputmode="numeric"
                   @input="resetErrors"
                   @keydown.enter="recover"
                 >
                 <label />
-                <span>
+                <span class="room-pwd-msg">
                   {{ roomPwdMsg }}
                 </span>
               </div>
@@ -596,6 +599,17 @@ main
 @media (max-width: 1170px)
   .author
     display: none
+
+  .start-container
+    .text-input
+      span
+        width: 12em
+        overflow: hidden
+        text-overflow: ellipsis
+        white-space: nowrap
+
+    .pwd span
+      width: 4em
   .connected-container
     display: block
     height: auto

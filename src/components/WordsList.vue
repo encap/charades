@@ -8,6 +8,7 @@
           type="text"
           class="add-one-input"
           placeholder="Add One"
+          autocapitalize="none"
           @keydown.enter="addOne"
         >
         <label />
