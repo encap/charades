@@ -637,6 +637,6 @@ main
 
       .draw-component
         height: 100vh
-        scroll-snap-stop: always
-        scroll-snap-align: start
+        // scroll-snap-stop: always
+        // scroll-snap-align: end
 </style>
