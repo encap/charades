@@ -137,11 +137,10 @@
         </template>
       </div>
 
-      <main class="main-container" :class="{'hide-list': hideList}">
+      <div class="main-container" :class="{'hide-list': hideList}">
         <!-- <transition name="toggle-admin" :duration="100000"> -->
         <WordsList
           v-if="admin"
-
           ref="wordsList"
           class="panel words-list"
           @used="updateUsed"
@@ -154,7 +153,7 @@
           :room-name="roomName"
           @draw="tempUsed += 1"
         />
-      </main>
+      </div>
     </div>
   </main>
 </template>
@@ -279,19 +278,15 @@ export default {
 
           // wrong password on recover
           if (this.roomPwd && !this.admin) {
-            console.warn('wrong pwd');
             this.roomPwdMsg = 'wrong password';
             this.focusPwd();
             return;
           }
 
           this.connected = true;
-
-          console.log('Join room ok');
         })
         .catch((err) => {
           if (err.response.status === 404) {
-            console.error('Room not found');
             this.loading = false;
 
             if (this.roomName.length) {
@@ -313,12 +308,10 @@ export default {
             await sleep(500);
             this.admin = true;
             this.connected = true;
-            console.log('Room created pwd: ', res.data);
             this.returnedRoomPwd = res.data;
           },
         ).catch((err) => {
           if (err.response.status === 409) {
-            console.warn('In use');
             this.roomNameMsg = 'name unavailable';
             this.focusName();
           }
@@ -395,14 +388,19 @@ body
 button, input[type="radio"]
   cursor: pointer
 
-
 button, input[type="text"]
   text-align: center
+
+@media (max-width: 1170px)
+  body, html
+    height: 100vh
+    overflow-y: scroll
+    scroll-snap-type: y mandatory
 </style>
 
 <style scoped lang="sass">
 main
-  height: 200vh
+  height: 100%
   width: 100vw
 
 .author
@@ -595,4 +593,36 @@ main
       .draw-component
         flex-basis: calc(100vw - 2em)
 
+@media (max-width: 1170px)
+  .author
+    display: none
+  .connected-container
+    display: block
+    height: auto
+    scroll-snap-stop: always
+    scroll-snap-align: start
+    .top
+      .leave-btn
+        width: calc(100vw - 2em) !important
+      .toggle-admin-btn
+        display: none !important
+      .used
+        display: flex
+        justify-content: space-between
+        margin-top: 1em
+        width: 100vw
+        .used-count
+          width: max-content
+          text-align: left
+
+    .main-container
+      display: block
+      .words-list
+        height: 70vh
+        margin-right: 0
+
+      .draw-component
+        height: 100vh
+        scroll-snap-stop: always
+        scroll-snap-align: start
 </style>

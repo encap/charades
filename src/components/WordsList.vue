@@ -13,7 +13,7 @@
         <label />
       </div>
 
-      <button :disabled="!oneText" @click="addOne">
+      <button :disabled="!oneText" class="add-one-btn" @click="addOne">
         <span>
           Add One
         </span>
@@ -119,14 +119,12 @@ export default {
   },
   watch: {
     async separatorText(current, previous) {
-      console.log('SEP ', `'${previous}'`, `'${current}'`);
-
       if (current !== this.customSeparatorText && current.match(/^[,;\n ]$/)) {
         this.customToggle = false;
       }
 
       if (this.listText) {
-        console.warn('CONVERTING ', `'${previous}'`, `'${current}'`);
+        // console.warn('CONVERTING ', `'${previous}'`, `'${current}'`);
 
         this.listText = this.listToArray(previous).join(current);
         await sleep(400);
@@ -138,9 +136,7 @@ export default {
     },
     // eslint-disable-next-line no-unused-vars
     customSeparatorText(current, previous) {
-      console.log('CUSTOM ', current.length, `'${this.separatorText}'`);
       if (this.customToggle && current.length && !current.match(/^[,;\n ]$/)) {
-        console.log('CUSTOM ACTIVE');
         this.history.unshift({
           separatorText: this.separatorText,
           list: this.list,
@@ -150,7 +146,6 @@ export default {
     },
     async customToggle(current) {
       if (current) {
-        console.log('input empty, set focus');
         await sleep(300);
         this.$refs.customSeparatorInput.focus();
         if (this.customSeparatorText) {
@@ -161,7 +156,6 @@ export default {
           this.separatorText = this.customSeparatorText;
         }
       } else {
-        console.log('OFF');
         this.history = [];
       }
     },
@@ -209,7 +203,6 @@ export default {
 
       axios.post(`${process.env.VUE_APP_URL}/api/list`, { overWrite, list, separatorText: this.separatorText })
         .then(async () => {
-          console.log('update ok');
           if (this.oneText.length) {
             await sleep(200);
             this.oneText = ''; // this sets focus too
@@ -273,7 +266,6 @@ export default {
     undo() {
       const snapshot = this.history.shift();
       this.list = snapshot.list;
-      console.log(snapshot.separatorText);
       if (snapshot.separatorText.match(/^[,;\n ]$/)) {
         this.customToggle = false;
       }
@@ -438,5 +430,14 @@ button:not(.undo)
     button:first-child
       margin-right: 4em
 
+@media (max-width: 1170px)
+  .add-one-btn
+    white-space: nowrap
+    overflow: hidden
+  .separator
+    .options
+      transform: translateX(0) !important
+    h3, .custom-separator-label, custom-separator-wrapper
+      display: none
 
 </style>
