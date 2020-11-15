@@ -55,11 +55,11 @@ client.connect(() => {
       if (roomPwd) {
         authenticated = await auth(roomName, roomPwd);
         if (authenticated) {
-          res.cookie('roomPwd', roomPwd, { maxAge: 2592000 });
-          res.cookie('roomName', roomName, { maxAge: 2592000 });
+          res.cookie('roomPwd', roomPwd, { maxAge: 2592000000 });
+          res.cookie('roomName', roomName, { maxAge: 2592000000 });
         }
       } else {
-        res.cookie('roomName', roomName, { maxAge: 2592000 });
+        res.cookie('roomName', roomName, { maxAge: 2592000000 });
       }
 
 
@@ -83,8 +83,8 @@ client.connect(() => {
     }
 
     db.collection(room.name).insertOne(room).then(() => {
-      res.cookie('roomName', room.name, { maxAge: 2592000 });
-      res.cookie('roomPwd', room.pwd, { maxAge: 2592000 });
+      res.cookie('roomName', room.name, { maxAge: 2592000000 });
+      res.cookie('roomPwd', room.pwd, { maxAge: 2592000000 });
       res.status(200).send(room.pwd.split('').reverse().join(''));
     }).catch((err) => {
       console.error(err);
