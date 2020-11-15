@@ -336,6 +336,7 @@ button:not(.undo)
       transform: translateX(10.5em) // + margin
       display: flex
       align-items: center
+      transition: transform 0.5s cubic-bezier(.71,0,.65,.79)
 
       h3
         font-size: 1.25rem
@@ -384,6 +385,7 @@ button:not(.undo)
       width: 10em
       position: relative
       margin-left: 0.5em
+      transition: opacity 0.5s ease-in-out
 
       label
         padding: 0
@@ -407,6 +409,7 @@ button:not(.undo)
         transform: translateX(0)
 
       .custom-separator-wrapper
+        transition-delay: 0.3s
         opacity: 1
         pointer-events: all
 

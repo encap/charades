@@ -1,6 +1,9 @@
 <template>
   <main id="app">
     <div class="loader" :class="{loading: loading}" />
+    <h4 class="author">
+      Made by Łukasz Wielgus for Lovely Sister
+    </h4>
 
     <div
       v-show="!loading"
@@ -8,6 +11,14 @@
       key="start"
       class="start-container"
     >
+      <img src="../public/logo.png" alt="logo" class="logo">
+      <!-- <div class="logo">
+        <h1>
+          MEMORY
+        </h1>
+        <h2>MULTIPLAYER EDITION</h2>
+      </div> -->
+
       <div class="text-input" @click="focusName">
         <input
           ref="roomNameInput"
@@ -80,7 +91,7 @@
       key="connected"
       ref="connected"
       class="connected-container"
-      :class="{showAdmin: admin && showAdmin, hidden: loading}"
+      :class="{hidden: loading}"
     >
       <div class="top">
         <div class="buttons">
@@ -91,12 +102,12 @@
           </button>
           <button
             v-if="admin"
+            ref="toggleAdmin"
             class="toggle-admin-btn"
-            style="pointer-events: none"
             @click="toggleAdmin"
           >
             <span>
-              {{ showAdmin ? 'Hide admin panel' : 'Show admin panel' }}
+              {{ hideList ? 'Show admin panel' : 'Hide admin panel' }}
             </span>
           </button>
         </div>
@@ -127,14 +138,22 @@
       </div>
 
       <main class="main-container" :class="{'hide-list': hideList}">
+        <!-- <transition name="toggle-admin" :duration="100000"> -->
         <WordsList
           v-if="admin"
+
           ref="wordsList"
           class="panel words-list"
           @used="updateUsed"
         />
+        <!-- </transition> -->
 
-        <DrawWord class="panel" :admin="admin" @draw="tempUsed += 1" />
+        <DrawWord
+          class="panel draw-component"
+          :admin="admin"
+          :room-name="roomName"
+          @draw="tempUsed += 1"
+        />
       </main>
     </div>
   </main>
@@ -163,7 +182,6 @@ export default {
       roomPwdMsg: '',
       admin: false,
       connected: false,
-      showAdmin: true,
       loading: false,
       tempUsed: 0,
       usedCount: 0,
@@ -325,8 +343,10 @@ export default {
       this.roomName = '';
       this.roomPwd = undefined;
     },
-    toggleAdmin() {
+    async toggleAdmin() {
       this.hideList = !this.hideList;
+      await sleep(1000);
+      this.$refs.toggleAdmin.blur();
     },
     updateUsed(data) {
       this.tempUsed = 0;
@@ -341,11 +361,22 @@ export default {
 </script>
 
 <style lang="sass">
+// @font-face
+//   font-family: 'Minecraft'
+//   src: url('../public/minecraft-font/minecraft.ttf') format('truetype')
+
+// @font-face
+//   font-family: 'Munro'
+//   src: url('../public/munro-font/munro.ttf') format('truetype')
+
 *, ::before, ::after
   box-sizing: border-box
   padding: 0
   margin: 0
   outline: none
+
+::selection
+  background-color: darken(rgba($blue, 0.99), 5%)
 
 body
   font-family: Arial, Helvetica, sans-serif
@@ -360,7 +391,8 @@ body
   overflow: hidden
 
 button, input[type="radio"]
-  cursor: pointer;
+  cursor: pointer
+
 
 button, input[type="text"]
   text-align: center
@@ -370,6 +402,14 @@ button, input[type="text"]
 main
   height: 200vh
   width: 100vw
+
+.author
+  position: fixed
+  bottom: 0.5em
+  right: 0.5em
+  font-weight: normal
+  font-size: 0.7em
+  color: $grey
 
 .loader
   position: fixed
@@ -397,17 +437,41 @@ main
     opacity: 1
 
 
-.text-input
-  @include text-input
-
 .start-container
   height: 100vh
-  padding: 30vh 5vw 10vh
+  padding: 10vh 5vw
   display: flex
   flex-direction: column
   justify-content: space-around
   margin: 0 auto
   max-width: 40em
+
+  .logo
+    width: 100%
+    transform: translateX(0.8rem)
+
+  // .logo
+  //   margin: 0 auto
+  //   width: min-content
+  //   h1
+  //     font-family: 'Minecraft', Arial, sans-serif
+
+  //     font-size: 7rem
+  //     letter-spacing: 0.1em
+  //     text-align: center
+  //     // color: $white
+
+
+  //   h2
+  //     transform: translateX(1em)
+  //     margin-top: 0.2em
+  //     text-align: right
+  //     font-family: 'Munro', Arial, sans-serif
+  //     letter-spacing: 0.05em
+  //     font-size: 1.5rem
+
+  .text-input
+    @include text-input
 
   .buttons
     margin-top: 1em
@@ -501,35 +565,32 @@ main
     position: relative
     display: flex
     align-items: center
-    justify-content: space-between
-    overflow: hidden
+    justify-content: space-around
+    overflow-y: hidden
     width: calc(100vw - 2em)
 
     .panel
       height: 100%
-      flex-grow: 1
+      flex-basis: 0
+      transition: flex-basis 1s ease-out, opacity 0.4s linear 0s
 
     .words-list
-      transition: transform .5s ease-in-out 1s
-      margin-right: 10em
+      margin-right: 8vw
+      flex-grow: 3
+      max-width: 60em
+      overflow: hidden
 
-    .panel:last-child
-      // max-width: 20em
-      // flex-grow: 0
-      // transition: all 0.7s ease-in-out 0s // todo find specific
+    .draw-component
+      flex-grow: 1
+      flex-basis: 20em
 
     &.hide-list
-
       .words-list
-        transition: transform .5s ease-in-out 0s
-        transform: translateX(-100%)
+        transition: flex-basis 1s ease-in, opacity 0.3s linear 0.3s
+        opacity: 0
+        flex-basis: 0
 
-      .panel:last-child
-        transition: all 1s ease-in-out 0.5s // todo find specific
-        // min-width: calc(100vw - 2em)
+      .draw-component
         flex-basis: calc(100vw - 2em)
-        flex-grow: 1
-        transform: translateX(calc(-50vw - 0.5em))
-
 
 </style>

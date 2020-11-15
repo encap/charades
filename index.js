@@ -42,7 +42,7 @@ client.connect(() => {
     .then((collections) => collections.some((collection) => collection.name === roomName));
 
   const auth = (roomName, roomPwd) => db.collection(roomName)
-    .findOne({ pwd: roomPwd.toString() }, { projection: { pwd: 1, _id: 0 } })
+    .findOne({ pwd: roomPwd.toString().split('').reverse().join('') }, { projection: { pwd: 1, _id: 0 } })
     .then((data) => data !== null);
 
   app.post('/api/join', async (req, res) => {
@@ -72,7 +72,8 @@ client.connect(() => {
   app.post('/api/create', async (req, res) => {
     const room = {
       name: req.body.roomName,
-      pwd: Math.floor(100 + (Math.random() * 900)).toString(),
+      pwd: Math.floor(100 + (Math.random() * 900)).toString().split('').reverse()
+        .join(''),
       list: [],
     };
 
@@ -84,7 +85,7 @@ client.connect(() => {
     db.collection(room.name).insertOne(room).then(() => {
       res.cookie('roomName', room.name, { maxAge: 2592000 });
       res.cookie('roomPwd', room.pwd, { maxAge: 2592000 });
-      res.status(200).send(room.pwd.toString());
+      res.status(200).send(room.pwd.split('').reverse().join(''));
     }).catch((err) => {
       console.error(err);
       res.status(500).end();

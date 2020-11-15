@@ -1,6 +1,6 @@
 $green: #48ad4a
 $blue: #38a5b8
-$bg-color: #1f242b
+$bg-color: #1f232c
 $white: #efefef
 $grey: desaturate(lighten($bg-color, 30%), 10%)
 
@@ -60,7 +60,9 @@ $grey: desaturate(lighten($bg-color, 30%), 10%)
   display: flex
   align-items: center
   justify-content: space-around
-  font: 500 1em 'Roboto Slab', sans-serif
+  font-weight: 500
+  font-family: inherit
+  font-size: 1em
   padding: .5em 2em
   letter-spacing: 0.05em
   background: no-repeat center radial-gradient(circle at center, transparent 0%, transparent 0.1%, $white 0.1%, $white 50%, transparent 50%)
@@ -78,6 +80,9 @@ $grey: desaturate(lighten($bg-color, 30%), 10%)
       background-size: 250%
     100%
       background-size: 130000%
+
+  &:disabled
+    pointer-events: none
 
   span:after
     display: block
