@@ -2,7 +2,7 @@
   <main id="app">
     <div class="loader" :class="{loading: loading}" />
     <h4 class="author">
-      Made by Łukasz Wielgus for Lovely Sister
+      Made by Łukasz Wielgus
     </h4>
 
     <div
