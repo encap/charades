@@ -1,12 +1,12 @@
 # Multiplayer Charades Game
-## Full-stack app made with Vue.js, Express.js and MongoDB
+## Full-stack app made with Vue.js, Express.js, and MongoDB
 
 Live at: https://charadesdrawer.herokuapp.com/  (wait 10s for server cold start)
 
-Join demo room: https://charadesdrawer.herokuapp.com/test_room
+Join a demo room: https://charadesdrawer.herokuapp.com/test_room
 
-![thumbnail](./thumbnail1.jpg)
-![thumbnail](./thumbnail2.jpg)
+![thumbnail1](./thumbnail1.jpg)
+![thumbnail2](./thumbnail2.jpg)
 
 The room owner can import or add words to the list. Players will then draw a random word which will be marked as used. Players won't see each other words so they can play charades together over the internet. 
 
